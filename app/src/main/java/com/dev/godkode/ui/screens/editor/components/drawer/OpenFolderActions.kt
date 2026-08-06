@@ -1,0 +1,199 @@
+/*
+ * This file is part of GodKode.
+ *
+ * GodKode is free software: you can redistribute it and/or modify it under the terms of
+ * the GNU General Public License as published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * GodKode is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along with GodKode.
+ * If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package com.dev.godkode.ui.screens.editor.components.drawer
+
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.sharp.Folder
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AlertDialogDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.documentfile.provider.DocumentFile
+import com.blankj.utilcode.util.UriUtils
+import com.dev.godkode.PreferenceKeys
+import com.dev.godkode.activities.Editor.LocalCommandPaletteManager
+import com.dev.godkode.app.strings
+import com.dev.godkode.extensions.toFile
+import com.dev.godkode.file.DocumentFileWrapper
+import com.dev.godkode.file.wrapFile
+import com.dev.godkode.keyboard.model.Command.Companion.newCommand
+import com.dev.godkode.preferences.defaultPrefs
+import com.dev.godkode.resources.R
+import com.dev.godkode.ui.screens.file.FileExplorerViewModel
+import com.dev.godkode.utils.showShortToast
+import java.io.File
+
+@Composable
+fun OpenFolderActions(
+    modifier: Modifier = Modifier,
+    fileExplorerViewModel: FileExplorerViewModel
+) {
+    val context = LocalContext.current
+    val commandPaletteManager = LocalCommandPaletteManager.current
+
+    val openFolder = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) { uri ->
+        if (uri != null) DocumentFile.fromTreeUri(context, uri)?.let {
+            val file = if (DocumentFileWrapper.shouldWrap(uri)) {
+                DocumentFileWrapper(it)
+            } else {
+                UriUtils.uri2File(it.uri).wrapFile()
+            }
+            fileExplorerViewModel.openFolder(file)
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        commandPaletteManager.addCommand(
+            newCommand("Open Folder", "Ctrl+Shift+O") {
+                openFolder.launch(null)
+            }
+        )
+    }
+
+    var showRecentFoldersDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(
+            onClick = { openFolder.launch(null) },
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text(text = stringResource(strings.open_folder))
+        }
+
+        Button(
+            onClick = { showRecentFoldersDialog = true },
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text(text = stringResource(strings.open_recent))
+        }
+    }
+
+    if (showRecentFoldersDialog) {
+        RecentFoldersDialog(
+            onDismissRequest = { showRecentFoldersDialog = false },
+            onOpenFolder = {
+                val treeUri = DocumentFile.fromFile(it).uri
+                fileExplorerViewModel.openFolder(UriUtils.uri2File(treeUri).wrapFile())
+                showRecentFoldersDialog = false
+            }
+        )
+    }
+}
+
+@Composable
+fun RecentFoldersDialog(
+    onDismissRequest: () -> Unit,
+    onOpenFolder: (File) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+
+    val recentFolders = listOfNotNull(
+        defaultPrefs.getString(PreferenceKeys.RECENT_FOLDER_1, ""),
+        defaultPrefs.getString(PreferenceKeys.RECENT_FOLDER_2, ""),
+        defaultPrefs.getString(PreferenceKeys.RECENT_FOLDER_3, ""),
+        defaultPrefs.getString(PreferenceKeys.RECENT_FOLDER_4, ""),
+        defaultPrefs.getString(PreferenceKeys.RECENT_FOLDER_5, "")
+    ).filter { it.isNotEmpty() }.distinct()
+
+    SideEffect {
+        if (recentFolders.isEmpty()) {
+            showShortToast(context, context.getString(R.string.no_recent_folder_found))
+            onDismissRequest()
+        }
+    }
+
+    AlertDialog(
+        modifier = modifier,
+        onDismissRequest = onDismissRequest,
+        title = { Text(text = stringResource(strings.open_recent)) },
+        text = {
+            LazyColumn {
+                items(recentFolders) { folderPath ->
+                    val folder = folderPath.toFile()
+
+                    ListItem(
+                        headlineContent = {
+                            Text(text = folder.name)
+                        },
+                        modifier = Modifier
+                            .clip(MaterialTheme.shapes.small)
+                            .clickable(
+                                onClick = { onOpenFolder(folder) },
+                                role = Role.Button
+                            ),
+                        supportingContent = {
+                            Text(
+                                text = folder.absolutePath,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Sharp.Folder,
+                                contentDescription = null
+                            )
+                        },
+                        colors = ListItemDefaults.colors(
+                            containerColor = AlertDialogDefaults.containerColor,
+                            headlineColor = AlertDialogDefaults.titleContentColor,
+                            supportingColor = AlertDialogDefaults.textContentColor,
+                            leadingIconColor = AlertDialogDefaults.iconContentColor
+                        )
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismissRequest) {
+                Text(text = stringResource(strings.cancel))
+            }
+        }
+    )
+}
