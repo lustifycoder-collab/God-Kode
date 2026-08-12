@@ -6,7 +6,7 @@ project("godkode")
 add_subdirectory(third-party/tiny-AES-c)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        godkode.cpp
+        vcspace.cpp
         gemini.cpp
         terminal/executor.cpp
 )
