@@ -79,6 +79,19 @@ object Session {
                         }
                         setExecutable(true)
                     }.absolutePath
+                }",
+                "NODEWRAP=${
+                    // nodewrap is a compiled native executable shipped in
+                    // nativeLibraryDir as libnodewrap.so. Copy it into the
+                    // bind-mounted PREFIX so it is visible inside the proot
+                    // jail, where init.sh installs it as the `node` shim.
+                    File(bin, "node-real-wrap").apply {
+                        val src = File(applicationInfo.nativeLibraryDir, "libnodewrap.so")
+                        if (src.exists() && (exists().not() || src.length() != length())) {
+                            src.copyTo(this, overwrite = true)
+                        }
+                        setExecutable(true)
+                    }.absolutePath
                 }"
             )
 
@@ -94,6 +107,12 @@ object Session {
 
             val shell = "/system/bin/sh"
             val args = arrayOf("-c", initHost.absolutePath)
+            // If a build command is requested, hand it to the jail via env
+            // (init.sh evals GODKODE_RUN_CMD before launching interactive bash).
+            val buildCmd = intent.getStringExtra(TerminalActivity.KEY_BUILD_COMMAND)
+            if (!buildCmd.isNullOrBlank()) {
+                env.add("GODKODE_RUN_CMD=$buildCmd")
+            }
 
             return TerminalSession(
                 shell,

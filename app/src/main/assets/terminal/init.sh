@@ -91,6 +91,29 @@ if ! command -v node >/dev/null 2>&1; then
     fi
 fi
 
+# === [5b] Node module-loading fix (proot/statx workaround) ===
+# The proot jail does NOT implement the statx() syscall that Node.js v20+
+# uses (via libuv) for fs.stat / Module._resolveFilename. As a result every
+# statx() on a rootfs path returns ENOENT and Node dies with:
+#     node:internal/modules/cjs/loader:1433  Error: Cannot find module ...
+# nodewrap is a seccomp wrapper that returns ENOSYS for statx(), forcing libuv
+# to fall back to stat()/newfstatat() — which proot DOES translate — so module
+# loading works. We install it as /usr/local/bin/node so it shadows the real
+# /usr/bin/node on PATH (/usr/local/bin precedes /usr/bin).
+if [ -n "$NODEWRAP" ] && [ -x "$NODEWRAP" ] && command -v node >/dev/null 2>&1; then
+    mkdir -p /usr/local/bin
+    # Only shadow if not already pointing at our wrapper.
+    if [ ! -e /usr/local/bin/node ] || [ "$(readlink -f /usr/local/bin/node 2>/dev/null)" != "$NODEWRAP" ]; then
+        rm -f /usr/local/bin/node
+        ln -sf "$NODEWRAP" /usr/local/bin/node
+    fi
+    if node -e "require('path')" >/dev/null 2>&1; then
+        echo -e "\e[32;1m[+] \e[37mNode module-loader fix (statx->stat) active\e[0m"
+    else
+        echo -e "\e[33;1m[!] \e[37mNode statx workaround installed but module load failed; check nodewrap seccomp support\e[0m"
+    fi
+fi
+
 # === [6] Python + pip + dev-headers ===
 if ! command -v python3 >/dev/null 2>&1; then
     echo -e "\e[34;1m[*] \e[37mInstalling Python3...\e[0m"
@@ -130,6 +153,15 @@ fi
 echo -e "\e[32;1m[+] \e[37mAlpine init complete. Type 'apk' to install more packages.\e[0m"
 
 # === [10] Запуск shell ===
+# Builder mode: GodKode asks to run a command (e.g. ./gradlew assembleDebug)
+# instead of an interactive bash. Passed through env (not positional args) so
+# that spaces/&&/quotes in the command survive — `eval` re-parses it as shell.
+if [ -n "$GODKODE_RUN_CMD" ]; then
+    echo -e "\e[34;1m[▸] \e[37m\$ $GODKODE_RUN_CMD\e[0m"
+    eval "$GODKODE_RUN_CMD"
+    exit $?
+fi
+
 if [ "$#" -eq 0 ]; then
     $START_SHELL
 else

@@ -106,6 +106,15 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                     )
 
                     preference(
+                        key = "pref_configure_builder_key",
+                        title = { Text("Builder") },
+                        summary = { Text("Run ./gradlew from inside the terminal jail") },
+                        onClick = {
+                            navController.navigateSingleTop(SettingScreens.Builder)
+                        }
+                    )
+
+                    preference(
                         key = "pref_configure_plugins_key",
                         title = { Text(stringResource(strings.pref_configure_plugins)) },
                         summary = { Text(stringResource(strings.pref_configure_plugins_summary)) },
@@ -221,6 +230,15 @@ fun SettingsScreen(modifier: Modifier = Modifier) {
                 MonacoEditorSettingsScreen(
                     modifier = modifier,
                     onNavigateUp = { navController.navigateSingleTop(SettingScreens.Editor) }
+                )
+            }
+        }
+
+        composable<SettingScreens.Builder> {
+            ProvidePreferenceLocals {
+                BuilderSettingsScreen(
+                    modifier = modifier,
+                    onNavigateUp = navController::navigateUp
                 )
             }
         }

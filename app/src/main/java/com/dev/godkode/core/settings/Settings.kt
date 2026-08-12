@@ -298,4 +298,33 @@ object Settings {
         @Composable
         fun rememberColorTheme() = rememberPreference(key = COLOR_THEME, defaultValue = 0)
     }
+
+    /**
+     * Builder settings. GodKode does not bundle the Android toolchain — instead
+     * the user points it at an existing one (e.g. installed via Termux or
+     * AndroidIDE). See ProjectBuilder for how these are consumed.
+     */
+    object Builder {
+        val JAVA_HOME = stringPreferencesKey("builder_java_home")
+        val ANDROID_HOME = stringPreferencesKey("builder_android_home")
+        val NDK_HOME = stringPreferencesKey("builder_ndk_home")
+        val GRADLE_ARGS = stringPreferencesKey("builder_gradle_args")
+        val TASK = stringPreferencesKey("builder_task")
+
+        @Composable
+        fun rememberJavaHome() = rememberPreference(key = JAVA_HOME, defaultValue = "")
+
+        @Composable
+        fun rememberAndroidHome() = rememberPreference(key = ANDROID_HOME, defaultValue = "")
+
+        @Composable
+        fun rememberNdkHome() = rememberPreference(key = NDK_HOME, defaultValue = "")
+
+        @Composable
+        fun rememberGradleArgs() =
+            rememberPreference(key = GRADLE_ARGS, defaultValue = "--console=plain --no-daemon")
+
+        @Composable
+        fun rememberTask() = rememberPreference(key = TASK, defaultValue = "assembleDebug")
+    }
 }

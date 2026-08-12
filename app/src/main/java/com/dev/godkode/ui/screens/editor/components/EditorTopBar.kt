@@ -69,10 +69,16 @@ import com.dev.godkode.activities.Editor.LocalEditorDrawerState
 import com.dev.godkode.activities.MarkdownPreviewActivity
 import com.dev.godkode.activities.TerminalActivity
 import com.dev.godkode.app.strings
+import com.dev.godkode.build.ProjectBuilder
 import com.dev.godkode.compose.LocalMenuManager
 import com.dev.godkode.core.EventManager
 import com.dev.godkode.core.components.Tooltip
 import com.dev.godkode.core.components.common.GodKodeTopBar
+import com.dev.godkode.core.settings.Settings.Builder.rememberAndroidHome
+import com.dev.godkode.core.settings.Settings.Builder.rememberGradleArgs
+import com.dev.godkode.core.settings.Settings.Builder.rememberJavaHome
+import com.dev.godkode.core.settings.Settings.Builder.rememberNdkHome
+import com.dev.godkode.core.settings.Settings.Builder.rememberTask
 import com.dev.godkode.core.settings.Settings.EditorTabs.rememberAutoSave
 import com.dev.godkode.editor.events.OnContentChangeEvent
 import com.dev.godkode.editor.events.OnKeyBindingEvent
@@ -85,6 +91,7 @@ import com.dev.godkode.resources.R
 import com.dev.godkode.ui.screens.editor.EditorViewModel
 import com.dev.godkode.ui.screens.editor.components.view.CodeEditorView
 import com.dev.godkode.utils.isFileRunnable
+import androidx.compose.material.icons.rounded.Build
 import com.dev.godkode.utils.launchWithProgressDialog
 import com.dev.godkode.webserver.LocalHttpServer
 import com.godkode.plugins.editor.Position
@@ -116,6 +123,13 @@ fun EditorTopBar(
 
     var showMenu by remember { mutableStateOf(false) }
     val showFileMenu = remember { mutableStateOf(false) }
+
+    // Toolchain settings for the in-app Gradle builder.
+    val javaHome by rememberJavaHome()
+    val androidHome by rememberAndroidHome()
+    val ndkHome by rememberNdkHome()
+    val task by rememberTask()
+    val gradleArgs by rememberGradleArgs()
 
     val editors = editorViewModel.editors
     val monacoEditors = editorViewModel.monacoEditors
@@ -381,13 +395,24 @@ fun EditorTopBar(
                 }
             }
 
-            LaunchedEffect(Unit) {
+             LaunchedEffect(Unit) {
                 commandPaletteManager.addCommand(
                     newCommand("Terminal", "Ctrl+T") {
                         context.open(TerminalActivity::class.java)
                     },
                     newCommand("Search", "Ctrl+K") {
                         selectedEditor?.beginSearchMode()
+                    },
+                    newCommand("Build APK", "Ctrl+B") {
+                        runBuild(
+                            context = context,
+                            file = selectedFile?.file,
+                            javaHome = javaHome.value,
+                            androidHome = androidHome.value,
+                            ndkHome = ndkHome.value,
+                            task = task.value,
+                            gradleArgs = gradleArgs.value,
+                        )
                     }
                 )
             }
@@ -461,6 +486,29 @@ fun EditorTopBar(
                         },
                         onClick = {
                             showFileMenu.value = !showFileMenu.value
+                            showMenu = false
+                        }
+                    )
+
+                    DropdownMenuItem(
+                        text = { Text("Build APK") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Rounded.Build,
+                                contentDescription = null
+                            )
+                        },
+                        trailingIcon = { Text("Ctrl+B") },
+                        onClick = {
+                            runBuild(
+                                context = context,
+                                file = selectedFile?.file,
+                                javaHome = javaHome.value,
+                                androidHome = androidHome.value,
+                                ndkHome = ndkHome.value,
+                                task = task.value,
+                                gradleArgs = gradleArgs.value,
+                            )
                             showMenu = false
                         }
                     )
@@ -644,4 +692,52 @@ private fun extractPythonFile(
             }
         }
     }
+}
+
+/**
+ * Launch an in-app Gradle build: locate the gradle root from the currently
+ * open file, prepare local.properties + low-mem gradle.properties, then run
+ * `./gradlew <task>` inside the proot terminal jail, streaming output to the
+ * TerminalActivity. The toolchain (JDK/SDK/NDK) is expected to be configured
+ * externally (Settings → Builder); GodKode does not bundle it.
+ */
+private fun runBuild(
+    context: Context,
+    file: JFile?,
+    javaHome: String,
+    androidHome: String,
+    ndkHome: String,
+    task: String,
+    gradleArgs: String,
+) {
+    if (file == null) {
+        ToastUtils.showShort("Open a project file first")
+        return
+    }
+    val root = ProjectBuilder.findGradleRoot(file)
+    if (root == null) {
+        ToastUtils.showShort("Not a Gradle project (no settings.gradle/gradlew upward)")
+        return
+    }
+    val tc = ProjectBuilder.Toolchain(
+        javaHome = javaHome.trim(),
+        androidHome = androidHome.trim(),
+        ndkHome = ndkHome.trim(),
+    )
+    if (!ProjectBuilder.requireToolchainOrToast(context, tc)) return
+
+    runCatching {
+        ProjectBuilder.prepareProject(root, tc)
+    }.onFailure {
+        ToastUtils.showLong("Failed to prepare project: ${it.message}")
+        return
+    }
+
+    val cmd = ProjectBuilder.buildCommand(root, tc, task.trim(), gradleArgs.trim())
+    context.startActivity(
+        Intent(context, TerminalActivity::class.java).apply {
+            putExtra(TerminalActivity.KEY_BUILD_COMMAND, cmd)
+            putExtra(TerminalActivity.KEY_WORKING_DIRECTORY, root.absolutePath)
+        }
+    )
 }

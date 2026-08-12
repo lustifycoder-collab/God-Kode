@@ -4,7 +4,7 @@
 #include <string>
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_teixeira_godkode_core_Secrets_getGenerativeAiApiKey(JNIEnv* env, jclass) {
+Java_com_dev_godkode_core_Secrets_getGenerativeAiApiKey(JNIEnv* env, jclass) {
     std::string key = AI::gemini::getApiKey();
     return env->NewStringUTF(key.c_str());
 }

@@ -273,19 +273,27 @@ class TerminalActivity : ComponentActivity() {
                     if (!outputFile.exists()) {
                         outputFile.createNewFile()
 
-                        downloadFile(
-                            url = file.url,
-                            outputFile = outputFile,
-                            onProgress = { downloadedBytes, totalBytes ->
-                                val currentFileProgress =
-                                    downloadedBytes.toFloat() / totalBytes.toFloat()
-                                totalProgress = (completedFiles + currentFileProgress) / totalFiles
+                        try {
+                            downloadFile(
+                                url = file.url,
+                                outputFile = outputFile,
+                                onProgress = { downloadedBytes, totalBytes ->
+                                    val currentFileProgress =
+                                        downloadedBytes.toFloat() / totalBytes.toFloat()
+                                    totalProgress = (completedFiles + currentFileProgress) / totalFiles
 
-                                runOnUiThread {
-                                    onProgress(completedFiles, totalFiles, totalProgress)
+                                    runOnUiThread {
+                                        onProgress(completedFiles, totalFiles, totalProgress)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        } catch (e: Exception) {
+                            // A leftover empty/partial file would mask the
+                            // failure on the next run (existence check skips
+                            // re-download), so always remove it here.
+                            outputFile.delete()
+                            throw e
+                        }
                     }
                     completedFiles++
                     withContext(Dispatchers.Main) {
@@ -318,13 +326,21 @@ class TerminalActivity : ComponentActivity() {
             return
         }
 
-        Runtime.getRuntime().exec("tar -xf ${usr.absolutePath} -C $appDataDir").waitFor()
+        val exit = Runtime.getRuntime()
+            .exec(arrayOf("tar", "-xf", usr.absolutePath, "-C", appDataDir.absolutePath))
+            .waitFor()
+        if (exit != 0) {
+            throw IllegalStateException("tar extraction failed (exit $exit) for ${usr.absolutePath}")
+        }
         usr.delete()
 
         val libtallocSo2Path = File(prefix, "lib/libtalloc.so.2").apply {
             if (exists()) delete()
         }.toPath()
         val libtallocSo241Path = File(prefix, "lib/libtalloc.so.2.4.1").toPath()
+        if (!libtallocSo241Path.toFile().exists()) {
+            throw IllegalStateException("libtalloc.so.2.4.1 missing, cannot create symlink")
+        }
         Files.createSymbolicLink(libtallocSo2Path, libtallocSo241Path)
         onComplete()
     }
@@ -335,7 +351,12 @@ class TerminalActivity : ComponentActivity() {
         if (alpine.exists().not() || alpineDir.listFiles().isNullOrEmpty().not()) {
             onComplete()
         } else {
-            Runtime.getRuntime().exec("tar -xf ${alpine.absolutePath} -C $alpineDir").waitFor()
+            val exit = Runtime.getRuntime()
+                .exec(arrayOf("tar", "-xf", alpine.absolutePath, "-C", alpineDir.absolutePath))
+                .waitFor()
+            if (exit != 0) {
+                throw IllegalStateException("alpine tar extraction failed (exit $exit) for ${alpine.absolutePath}")
+            }
             alpine.delete()
             with(alpineDir) {
                 child("etc/hostname").writeText(getString(strings.app_name))
@@ -386,6 +407,7 @@ class TerminalActivity : ComponentActivity() {
     companion object {
         const val KEY_WORKING_DIRECTORY = "terminal_workingDirectory"
         const val KEY_PYTHON_FILE_PATH = "terminal_python_file"
+        const val KEY_BUILD_COMMAND = "terminal_build_command"
     }
 }
 
