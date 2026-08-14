@@ -406,7 +406,7 @@ fun EditorTopBar(
                     newCommand("Build APK", "Ctrl+B") {
                         runBuild(
                             context = context,
-                            file = selectedFile?.file,
+                            file = selectedFile?.file?.asRawFile(),
                             javaHome = javaHome.value,
                             androidHome = androidHome.value,
                             ndkHome = ndkHome.value,
@@ -502,7 +502,7 @@ fun EditorTopBar(
                         onClick = {
                             runBuild(
                                 context = context,
-                                file = selectedFile?.file,
+                                file = selectedFile?.file?.asRawFile(),
                                 javaHome = javaHome.value,
                                 androidHome = androidHome.value,
                                 ndkHome = ndkHome.value,

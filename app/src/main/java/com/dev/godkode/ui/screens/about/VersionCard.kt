@@ -55,7 +55,7 @@ fun VersionCard(modifier: Modifier = Modifier) {
             modifier = Modifier.fillMaxWidth()
         ) {
             Image(
-                ImageBitmap.imageResource(drawables.ic_launcher),
+                ImageBitmap.imageResource(R.mipmap.ic_launcher),
                 contentDescription = null,
                 modifier = Modifier
                     .padding(16.dp)

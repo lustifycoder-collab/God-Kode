@@ -124,15 +124,15 @@ object ProjectBuilder {
         sb.append("cd ").append(shellQuote(projectRoot.absolutePath)).append(" && ")
         if (tc.javaHome.isNotBlank()) {
             sb.append("export JAVA_HOME=").append(shellQuote(tc.javaHome)).append(" && ")
-            sb.append("export PATH=\"$JAVA_HOME/bin:$PATH\" && ")
+            sb.append("export PATH=\"\$JAVA_HOME/bin:\$PATH\" && ")
         }
         if (tc.androidHome.isNotBlank()) {
             sb.append("export ANDROID_HOME=").append(shellQuote(tc.androidHome))
-                .append(" && export ANDROID_SDK_ROOT=$ANDROID_HOME && ")
+                .append(" && export ANDROID_SDK_ROOT=\$ANDROID_HOME && ")
         }
         if (tc.ndkHome.isNotBlank()) {
             sb.append("export ANDROID_NDK_HOME=").append(shellQuote(tc.ndkHome))
-                .append(" && export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME && ")
+                .append(" && export ANDROID_NDK_ROOT=\$ANDROID_NDK_HOME && ")
         }
         sb.append("chmod +x ./gradlew 2>/dev/null; ")
         sb.append("./gradlew ").append(task)

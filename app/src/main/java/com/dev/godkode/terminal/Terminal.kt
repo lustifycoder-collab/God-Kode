@@ -64,6 +64,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.dev.godkode.activities.TerminalActivity
+import androidx.datastore.preferences.core.edit
 import com.dev.godkode.core.settings.dataStore
 import com.dev.godkode.activities.TerminalActivity.Companion.KEY_PYTHON_FILE_PATH
 import com.dev.godkode.terminal.service.TerminalService
