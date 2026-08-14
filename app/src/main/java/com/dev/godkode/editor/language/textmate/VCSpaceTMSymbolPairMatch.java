@@ -28,16 +28,16 @@ import io.github.rosemoe.sora.text.ContentLine;
 import io.github.rosemoe.sora.widget.CodeEditor;
 import io.github.rosemoe.sora.widget.SymbolPairMatch;
 
-public class GodKodeTMSymbolPairMatch extends SymbolPairMatch {
+public class VCSpaceTMSymbolPairMatch extends SymbolPairMatch {
   private static final String surroundingPairFlag = "surroundingPair";
 
   private static final List<String> surroundingPairFlagWithList = List.of(surroundingPairFlag);
 
-  private final GodKodeTMLanguage language;
+  private final VCSpaceTMLanguage language;
 
   private boolean enabled = true;
 
-  public GodKodeTMSymbolPairMatch(GodKodeTMLanguage language) {
+  public VCSpaceTMSymbolPairMatch(VCSpaceTMLanguage language) {
     super(new SymbolPairMatch.DefaultSymbolPairs());
     this.language = language;
 
@@ -90,7 +90,7 @@ public class GodKodeTMSymbolPairMatch extends SymbolPairMatch {
     }
 
     for (var pair : mergePairs) {
-      putPair(pair.open, new SymbolPair(pair.open, pair.close, new GodKodeTMSymbolPairMatch.SymbolPairEx(pair)));
+      putPair(pair.open, new SymbolPair(pair.open, pair.close, new VCSpaceTMSymbolPairMatch.SymbolPairEx(pair)));
     }
   }
 

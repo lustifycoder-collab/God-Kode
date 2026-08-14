@@ -35,8 +35,8 @@ import io.github.rosemoe.sora.lang.styling.Styles;
 import io.github.rosemoe.sora.text.CharPosition;
 import io.github.rosemoe.sora.text.Content;
 
-public class GodKodeTMNewlineHandler implements NewlineHandler {
-  private final GodKodeTMLanguage language;
+public class VCSpaceTMNewlineHandler implements NewlineHandler {
+  private final VCSpaceTMLanguage language;
   private OnEnterSupport enterSupport = null;
   private IndentRulesSupport indentRulesSupport = null;
   private CompleteEnterAction enterAction;
@@ -49,7 +49,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
 
   private final LanguageConfiguration languageConfiguration;
 
-  public GodKodeTMNewlineHandler(GodKodeTMLanguage language) {
+  public VCSpaceTMNewlineHandler(VCSpaceTMLanguage language) {
     this.language = language;
     var languageConfiguration = language.languageConfiguration;
 
@@ -159,7 +159,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
 
     var beforeEnterIndent = TextUtils.getLeadingWhitespace(beforeEnterText, 0, beforeEnterText.length());
 
-    var afterEnterAction = getInheritIndentForLine(new GodKodeTMNewlineHandler.WrapperContentImp(text, position.line, beforeEnterText), true, position.line + 1);
+    var afterEnterAction = getInheritIndentForLine(new VCSpaceTMNewlineHandler.WrapperContentImp(text, position.line, beforeEnterText), true, position.line + 1);
 
 
     if (afterEnterAction == null) {
@@ -210,12 +210,12 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
    * This function only return the inherited indent based on above lines, it doesn't check whether current line should decrease or not.
    */
   @Nullable
-  private GodKodeTMNewlineHandler.InheritIndentResult getInheritIndentForLine(GodKodeTMNewlineHandler.WrapperContent wrapperContent,
+  private VCSpaceTMNewlineHandler.InheritIndentResult getInheritIndentForLine(VCSpaceTMNewlineHandler.WrapperContent wrapperContent,
                                                                               boolean honorIntentialIndent, int line) {
     // https://github.com/microsoft/vscode/blob/bf63ea1932dd253745f38a4cbe26bb9be01801b1/src/vs/editor/common/languages/autoIndent.ts#L73
 
     if (line <= 0) {
-      return new GodKodeTMNewlineHandler.InheritIndentResult("", null);
+      return new VCSpaceTMNewlineHandler.InheritIndentResult("", null);
     }
 
     var precedingUnIgnoredLine = getPrecedingValidLine(wrapperContent, line);
@@ -228,9 +228,9 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
 
     var precedingUnIgnoredLineContent = wrapperContent.getLineContent(precedingUnIgnoredLine);
     if (indentRulesSupport.shouldIncrease(precedingUnIgnoredLineContent) || indentRulesSupport.shouldIndentNextLine(precedingUnIgnoredLineContent)) {
-      return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(precedingUnIgnoredLineContent, 0, precedingUnIgnoredLineContent.length()), EnterAction.IndentAction.Indent, precedingUnIgnoredLine);
+      return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(precedingUnIgnoredLineContent, 0, precedingUnIgnoredLineContent.length()), EnterAction.IndentAction.Indent, precedingUnIgnoredLine);
     } else if (indentRulesSupport.shouldDecrease(precedingUnIgnoredLineContent)) {
-      return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(precedingUnIgnoredLineContent, 0, precedingUnIgnoredLineContent.length()), null, precedingUnIgnoredLine);
+      return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(precedingUnIgnoredLineContent, 0, precedingUnIgnoredLineContent.length()), null, precedingUnIgnoredLine);
     } else {
       // precedingUnIgnoredLine can not be ignored.
       // it doesn't increase indent of following lines
@@ -238,7 +238,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
       // so current line is not affect by precedingUnIgnoredLine
       // and then we should get a correct inheritted indentation from above lines
       if (precedingUnIgnoredLine == 0) {
-        return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(precedingUnIgnoredLine)), null, precedingUnIgnoredLine);
+        return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(precedingUnIgnoredLine)), null, precedingUnIgnoredLine);
       }
 
 
@@ -259,11 +259,11 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
           break;
         }
 
-        return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(stopLine + 1)), null, stopLine + 1);
+        return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(stopLine + 1)), null, stopLine + 1);
       }
 
       if (honorIntentialIndent) {
-        return new GodKodeTMNewlineHandler.InheritIndentResult(
+        return new VCSpaceTMNewlineHandler.InheritIndentResult(
           TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(precedingUnIgnoredLine)), null, precedingUnIgnoredLine);
       }
 
@@ -272,7 +272,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
       for (var i = precedingUnIgnoredLine; i > 0; i--) {
         var lineContent = wrapperContent.getLineContent(i);
         if (indentRulesSupport.shouldIncrease(lineContent)) {
-          return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(lineContent), EnterAction.IndentAction.Indent, i);
+          return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(lineContent), EnterAction.IndentAction.Indent, i);
         } else if (indentRulesSupport.shouldIndentNextLine(lineContent)) {
           var stopLine = 0;
           for (var j = i - 1; j > 0; j--) {
@@ -284,14 +284,14 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
           }
 
 
-          return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(stopLine + 1)), null, stopLine + 1);
+          return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(stopLine + 1)), null, stopLine + 1);
 
         } else if (indentRulesSupport.shouldDecrease(lineContent)) {
-          return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(lineContent), null, i);
+          return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(lineContent), null, i);
         }
       }
 
-      return new GodKodeTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(1)), null, 1);
+      return new VCSpaceTMNewlineHandler.InheritIndentResult(TextUtils.getLeadingWhitespace(wrapperContent.getLineContent(1)), null, 1);
     }
   }
 
@@ -303,7 +303,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
    * 0: every line above are invalid
    * else: nearest preceding line of the same language
    */
-  public int getPrecedingValidLine(GodKodeTMNewlineHandler.WrapperContent content, int lineNumber) {
+  public int getPrecedingValidLine(VCSpaceTMNewlineHandler.WrapperContent content, int lineNumber) {
     // remove embeddedLanguages support
     // const languageId = model.tokenization.getLanguageIdAtPosition(lineNumber, 0);
     if (lineNumber > 0) {
@@ -500,7 +500,7 @@ public class GodKodeTMNewlineHandler implements NewlineHandler {
       }
      };
      */
-  private static class WrapperContentImp implements GodKodeTMNewlineHandler.WrapperContent {
+  private static class WrapperContentImp implements VCSpaceTMNewlineHandler.WrapperContent {
     private final Content content;
     private final int line;
     private final String currentLineContent;

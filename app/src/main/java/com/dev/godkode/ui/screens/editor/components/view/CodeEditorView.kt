@@ -9,7 +9,7 @@ import androidx.core.view.isVisible
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.dev.godkode.editor.GodKodeEditor
 import com.dev.godkode.editor.databinding.LayoutCodeEditorBinding
-import com.dev.godkode.editor.language.textmate.GodKodeTMLanguage
+import com.dev.godkode.editor.language.textmate.VCSpaceTMLanguage
 import com.dev.godkode.events.OnPreferenceChangeEvent
 import com.dev.godkode.file.File
 import com.dev.godkode.file.extension
@@ -211,12 +211,12 @@ class CodeEditorView(context: Context, file: File) : LinearLayout(context) {
     }
 
     private fun updateEditorIndent() {
-        (editor.editorLanguage as? GodKodeTMLanguage)?.tabSize = editorIndent
+        (editor.editorLanguage as? VCSpaceTMLanguage)?.tabSize = editorIndent
         editor.tabWidth = editorIndent
     }
 
     private fun updateEditorUseTab() {
-        (editor.editorLanguage as? GodKodeTMLanguage)?.useTab(editorUseTab)
+        (editor.editorLanguage as? VCSpaceTMLanguage)?.useTab(editorUseTab)
     }
 
     private fun updateStickyScroll() {
@@ -260,7 +260,7 @@ class CodeEditorView(context: Context, file: File) : LinearLayout(context) {
         val scopeName: String? = GrammarProvider.findScopeByFileExtension(file?.extension)
 
         return if (scopeName != null) {
-            GodKodeTMLanguage.create(scopeName, GrammarRegistry.getInstance(), true).apply {
+            VCSpaceTMLanguage.create(scopeName, GrammarRegistry.getInstance(), true).apply {
                 tabSize = editorIndent
                 useTab(editorUseTab)
             }

@@ -36,7 +36,7 @@ import org.eclipse.tm4e.core.registry.IThemeSource
 import org.eclipse.tm4e.languageconfiguration.internal.model.LanguageConfiguration
 import java.io.Reader
 
-class GodKodeTMLanguage protected constructor(
+class VCSpaceTMLanguage protected constructor(
     val grammar: IGrammar?,
     @JvmField
     var languageConfiguration: LanguageConfiguration?,
@@ -55,14 +55,14 @@ class GodKodeTMLanguage protected constructor(
     val autoCompleter: IdentifierAutoComplete = IdentifierAutoComplete()
     var isAutoCompleteEnabled: Boolean = true
 
-    var textMateAnalyzer: GodKodeTMAnalyzer? = null
+    var textMateAnalyzer: VCSpaceTMAnalyzer? = null
 
-    private lateinit var newlineHandlers: Array<GodKodeTMNewlineHandler>
+    private lateinit var newlineHandlers: Array<VCSpaceTMNewlineHandler>
 
     // this.grammar = grammar;
-    var symbolPairMatch: GodKodeTMSymbolPairMatch = GodKodeTMSymbolPairMatch(this)
+    var symbolPairMatch: VCSpaceTMSymbolPairMatch = VCSpaceTMSymbolPairMatch(this)
 
-    var newlineHandler: GodKodeTMNewlineHandler? = null
+    var newlineHandler: VCSpaceTMNewlineHandler? = null
         private set
 
     init {
@@ -102,7 +102,7 @@ class GodKodeTMLanguage protected constructor(
         }
         try {
             textMateAnalyzer =
-                GodKodeTMAnalyzer(
+                VCSpaceTMAnalyzer(
                     this,
                     grammar,
                     languageConfiguration,  /*grammarRegistry,*/
@@ -112,7 +112,7 @@ class GodKodeTMLanguage protected constructor(
             e.printStackTrace()
         }
         this.languageConfiguration = languageConfiguration
-        newlineHandler = GodKodeTMNewlineHandler(this)
+        newlineHandler = VCSpaceTMNewlineHandler(this)
         newlineHandlers = arrayOf(newlineHandler!!)
         if (languageConfiguration != null) {
             // because the editor will only get the symbol pair matcher once
@@ -142,7 +142,7 @@ class GodKodeTMLanguage protected constructor(
         if (textMateAnalyzer == null) {
             return EmptyAnalyzeManager.INSTANCE
         }
-        return textMateAnalyzer as GodKodeTMAnalyzer
+        return textMateAnalyzer as VCSpaceTMAnalyzer
     }
 
 
@@ -154,11 +154,11 @@ class GodKodeTMLanguage protected constructor(
         this.useTab = useTab
     }
 
-    override fun getSymbolPairs(): GodKodeTMSymbolPairMatch {
+    override fun getSymbolPairs(): VCSpaceTMSymbolPairMatch {
         return symbolPairMatch
     }
 
-    override fun getNewlineHandlers(): Array<GodKodeTMNewlineHandler> {
+    override fun getNewlineHandlers(): Array<VCSpaceTMNewlineHandler> {
         return newlineHandlers
     }
 
@@ -259,13 +259,13 @@ class GodKodeTMLanguage protected constructor(
             grammarSource: IGrammarSource,
             languageConfiguration: Reader?,
             themeSource: IThemeSource?
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             val grammar = prepareLoad(grammarSource, languageConfiguration, themeSource)
             return create(grammar.scopeName, true)
         }
 
         @Deprecated("")
-        fun create(grammarSource: IGrammarSource, themeSource: IThemeSource?): GodKodeTMLanguage {
+        fun create(grammarSource: IGrammarSource, themeSource: IThemeSource?): VCSpaceTMLanguage {
             val grammar = prepareLoad(grammarSource, null, themeSource)
             return create(grammar.scopeName, true)
         }
@@ -275,7 +275,7 @@ class GodKodeTMLanguage protected constructor(
             grammarSource: IGrammarSource,
             languageConfiguration: Reader?,
             themeSource: IThemeSource?
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             val grammar = prepareLoad(grammarSource, languageConfiguration, themeSource)
             return create(grammar.scopeName, false)
         }
@@ -284,12 +284,12 @@ class GodKodeTMLanguage protected constructor(
         fun createNoCompletion(
             grammarSource: IGrammarSource,
             themeSource: IThemeSource?
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             val grammar = prepareLoad(grammarSource, null, themeSource)
             return create(grammar.scopeName, false)
         }
 
-        fun create(languageScopeName: String?, autoCompleteEnabled: Boolean): GodKodeTMLanguage {
+        fun create(languageScopeName: String?, autoCompleteEnabled: Boolean): VCSpaceTMLanguage {
             return create(languageScopeName, GrammarRegistry.getInstance(), autoCompleteEnabled)
         }
 
@@ -297,7 +297,7 @@ class GodKodeTMLanguage protected constructor(
             languageScopeName: String?,
             grammarRegistry: GrammarRegistry,
             autoCompleteEnabled: Boolean
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             return create(
                 languageScopeName,
                 grammarRegistry,
@@ -311,7 +311,7 @@ class GodKodeTMLanguage protected constructor(
             grammarRegistry: GrammarRegistry,
             themeRegistry: ThemeRegistry,
             autoCompleteEnabled: Boolean
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             val grammar = grammarRegistry.findGrammar(languageScopeName)
 
             requireNotNull(grammar) {
@@ -324,7 +324,7 @@ class GodKodeTMLanguage protected constructor(
             val languageConfiguration = grammarRegistry.findLanguageConfiguration(grammar.scopeName)
 
 
-            return GodKodeTMLanguage(
+            return VCSpaceTMLanguage(
                 grammar,
                 languageConfiguration,
                 grammarRegistry,
@@ -337,7 +337,7 @@ class GodKodeTMLanguage protected constructor(
         fun create(
             grammarDefinition: GrammarDefinition?,
             autoCompleteEnabled: Boolean
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             return create(grammarDefinition, GrammarRegistry.getInstance(), autoCompleteEnabled)
         }
 
@@ -345,7 +345,7 @@ class GodKodeTMLanguage protected constructor(
             grammarDefinition: GrammarDefinition?,
             grammarRegistry: GrammarRegistry,
             autoCompleteEnabled: Boolean
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             return create(
                 grammarDefinition,
                 grammarRegistry,
@@ -359,7 +359,7 @@ class GodKodeTMLanguage protected constructor(
             grammarRegistry: GrammarRegistry,
             themeRegistry: ThemeRegistry,
             autoCompleteEnabled: Boolean
-        ): GodKodeTMLanguage {
+        ): VCSpaceTMLanguage {
             val grammar = grammarRegistry.loadGrammar(grammarDefinition)
 
             requireNotNull(grammar) {
@@ -371,7 +371,7 @@ class GodKodeTMLanguage protected constructor(
 
             val languageConfiguration = grammarRegistry.findLanguageConfiguration(grammar.scopeName)
 
-            return GodKodeTMLanguage(
+            return VCSpaceTMLanguage(
                 grammar,
                 languageConfiguration,
                 grammarRegistry,

@@ -58,10 +58,10 @@ import io.github.rosemoe.sora.util.ArrayList;
 import io.github.rosemoe.sora.util.MyCharacter;
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme;
 
-public class GodKodeTMAnalyzer extends AsyncIncrementalAnalyzeManager<MyState, Span> implements FoldingHelper, ThemeRegistry.ThemeChangeListener {
+public class VCSpaceTMAnalyzer extends AsyncIncrementalAnalyzeManager<MyState, Span> implements FoldingHelper, ThemeRegistry.ThemeChangeListener {
   final IdentifierAutoComplete.SyncIdentifiers syncIdentifiers = new IdentifierAutoComplete.SyncIdentifiers();
   private final IGrammar grammar;
-  private final GodKodeTMLanguage language;
+  private final VCSpaceTMLanguage language;
   private final LanguageConfiguration configuration;
 
   //private final GrammarRegistry grammarRegistry;
@@ -73,7 +73,7 @@ public class GodKodeTMAnalyzer extends AsyncIncrementalAnalyzeManager<MyState, S
   private BracketsProvider bracketsProvider;
 
 
-  public GodKodeTMAnalyzer(GodKodeTMLanguage language, IGrammar grammar, LanguageConfiguration languageConfiguration,/* GrammarRegistry grammarRegistry,*/ ThemeRegistry themeRegistry) {
+  public VCSpaceTMAnalyzer(VCSpaceTMLanguage language, IGrammar grammar, LanguageConfiguration languageConfiguration,/* GrammarRegistry grammarRegistry,*/ ThemeRegistry themeRegistry) {
     this.language = language;
 
     this.theme = themeRegistry.getCurrentThemeModel().getTheme();
