@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Brightness4
 import androidx.compose.material.icons.filled.InvertColors
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.rounded.Gesture
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,9 +51,12 @@ import com.dev.godkode.core.settings.Settings.General.rememberFollowSystemTheme
 import com.dev.godkode.core.settings.Settings.General.rememberIsAmoledMode
 import com.dev.godkode.core.settings.Settings.General.rememberIsDarkMode
 import com.dev.godkode.core.settings.Settings.General.rememberIsDynamicColor
+import com.dev.godkode.core.settings.Settings.Ai.API_KEY
+import com.dev.godkode.core.settings.Settings.Ai.rememberApiKey
 import com.dev.godkode.resources.R
 import me.zhanghai.compose.preference.preferenceCategory
 import me.zhanghai.compose.preference.switchPreference
+import me.zhanghai.compose.preference.textFieldPreference
 
 @Composable
 fun GeneralSettingsScreen(
@@ -67,6 +71,7 @@ fun GeneralSettingsScreen(
     val amoledMode = rememberIsAmoledMode()
     val dynamicColor = rememberIsDynamicColor()
     val enableGestureInDrawer = rememberEnableGestureInDrawer()
+    val aiApiKey = rememberApiKey()
 
     BackHandler(onBack = onNavigateUp)
 
@@ -189,6 +194,29 @@ fun GeneralSettingsScreen(
             },
             modifier = Modifier
                 .clip(PreferenceShape.Bottom)
+                .background(backgroundColor)
+        )
+
+        preferenceCategory(
+            key = "ai_settings_category",
+            title = { Text(text = "AI") }
+        )
+
+        textFieldPreference(
+            key = API_KEY.name,
+            title = { Text(text = "Gemini API Key") },
+            summary = { Text(it.ifBlank { "Paste your Google AI Studio API key" }) },
+            rememberState = { aiApiKey },
+            defaultValue = aiApiKey.value,
+            textToValue = { it },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.SmartToy,
+                    contentDescription = null
+                )
+            },
+            modifier = Modifier
+                .clip(PreferenceShape.Alone)
                 .background(backgroundColor)
         )
     }

@@ -327,4 +327,13 @@ object Settings {
         @Composable
         fun rememberTask() = rememberPreference(key = TASK, defaultValue = "assembleDebug")
     }
+
+    object Ai {
+        const val DEFAULT_API_KEY = ""
+
+        val API_KEY = stringPreferencesKey("ai_api_key")
+
+        @Composable
+        fun rememberApiKey() = rememberPreference(key = API_KEY, defaultValue = "")
+    }
 }

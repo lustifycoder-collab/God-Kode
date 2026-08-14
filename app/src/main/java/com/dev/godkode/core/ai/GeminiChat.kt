@@ -21,27 +21,53 @@ import com.google.ai.client.generativeai.type.BlockThreshold
 import com.google.ai.client.generativeai.type.HarmCategory
 import com.google.ai.client.generativeai.type.SafetySetting
 import com.google.ai.client.generativeai.type.generationConfig
+import com.dev.godkode.app.BaseApplication
 import com.dev.godkode.core.Secrets
+import com.dev.godkode.core.settings.Settings
+import com.dev.godkode.core.settings.dataStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 object GeminiChat {
-    private val model = GenerativeModel(
-        modelName = "gemini-3.7-flash",
-        apiKey = Secrets.getGenerativeAiApiKey(),
-        generationConfig = generationConfig {
-            temperature = 0.7f
-            topK = 64
-            topP = 0.95f
-            maxOutputTokens = 8192
-        },
-        safetySettings = listOf(
-            SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE),
+    private fun resolveApiKey(): String {
+        val stored = runBlocking {
+            BaseApplication.instance.dataStore.data.first()[Settings.Ai.API_KEY]
+        }
+        return stored?.takeIf { it.isNotBlank() } ?: Secrets.getGenerativeAiApiKey()
+    }
+
+    @Volatile
+    private var cachedModel: GenerativeModel? = null
+
+    private val model: GenerativeModel
+        get() {
+            val current = cachedModel
+            if (current != null) return current
+            return synchronized(this) {
+                cachedModel ?: createModel().also { cachedModel = it }
+            }
+        }
+
+    private fun createModel(): GenerativeModel {
+        return GenerativeModel(
+            modelName = "gemini-3.7-flash",
+            apiKey = resolveApiKey(),
+            generationConfig = generationConfig {
+                temperature = 0.7f
+                topK = 64
+                topP = 0.95f
+                maxOutputTokens = 8192
+            },
+            safetySettings = listOf(
+                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE),
+            )
         )
-    )
+    }
 
     private var chat: Chat? = null
 
@@ -60,5 +86,6 @@ object GeminiChat {
     @Synchronized
     fun resetChat() {
         chat = null
+        cachedModel = null
     }
 }

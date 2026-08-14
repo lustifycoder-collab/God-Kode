@@ -139,19 +139,7 @@ class TerminalActivity : ComponentActivity() {
             try {
                 val abi = Build.SUPPORTED_ABIS
 
-                val filesToDownload = listOf(
-                    DownloadFile(
-                        url = if (abi.contains("x86_64")) {
-                            x86_64_packages
-                        } else if (abi.contains("arm64-v8a")) {
-                            aarch64_packages
-                        } else if (abi.contains("armeabi-v7a")) {
-                            arm_packages
-                        } else {
-                            throw RuntimeException("Unsupported CPU")
-                        }, outputPath = "tmp/usr.tar.gz"
-                    )
-                ).toMutableList()
+                val filesToDownload = mutableListOf<DownloadFile>()
 
                 if (alpineDir.listFiles().isNullOrEmpty()) {
                     filesToDownload.add(

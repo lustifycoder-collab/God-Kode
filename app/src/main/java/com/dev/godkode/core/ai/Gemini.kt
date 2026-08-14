@@ -24,27 +24,40 @@ import com.google.ai.client.generativeai.type.content
 import com.google.ai.client.generativeai.type.generationConfig
 import com.dev.godkode.app.BaseApplication
 import com.dev.godkode.core.Secrets
+import com.dev.godkode.core.settings.Settings
+import com.dev.godkode.core.settings.dataStore
 import com.dev.godkode.resources.R
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 
 object Gemini {
-    private val model = GenerativeModel(
-        modelName = "gemini-3.7-flash",
-        apiKey = Secrets.getGenerativeAiApiKey(),
-        generationConfig = generationConfig {
-            temperature = 0.7f
-            topK = 64
-            topP = 0.95f
-            maxOutputTokens = 65536
-        },
-        safetySettings = listOf(
-            SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
-            SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE),
+    private fun resolveApiKey(): String {
+        val stored = runBlocking {
+            BaseApplication.instance.dataStore.data.first()[Settings.Ai.API_KEY]
+        }
+        return stored?.takeIf { it.isNotBlank() } ?: Secrets.getGenerativeAiApiKey()
+    }
+
+    private val model by lazy {
+        GenerativeModel(
+            modelName = "gemini-3.7-flash",
+            apiKey = resolveApiKey(),
+            generationConfig = generationConfig {
+                temperature = 0.7f
+                topK = 64
+                topP = 0.95f
+                maxOutputTokens = 65536
+            },
+            safetySettings = listOf(
+                SafetySetting(HarmCategory.HARASSMENT, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.HATE_SPEECH, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.SEXUALLY_EXPLICIT, BlockThreshold.MEDIUM_AND_ABOVE),
+                SafetySetting(HarmCategory.DANGEROUS_CONTENT, BlockThreshold.MEDIUM_AND_ABOVE),
+            )
         )
-    )
+    }
 
     private suspend fun generateContent(prompt: String) = withContext(Dispatchers.IO) {
         runCatching {
