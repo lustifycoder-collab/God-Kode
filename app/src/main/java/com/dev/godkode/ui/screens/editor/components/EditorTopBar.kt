@@ -407,11 +407,11 @@ fun EditorTopBar(
                         runBuild(
                             context = context,
                             file = selectedFile?.file?.asRawFile(),
-                            javaHome = javaHome.value,
-                            androidHome = androidHome.value,
-                            ndkHome = ndkHome.value,
-                            task = task.value,
-                            gradleArgs = gradleArgs.value,
+                            javaHome = javaHome,
+                            androidHome = androidHome,
+                            ndkHome = ndkHome,
+                            task = task,
+                            gradleArgs = gradleArgs,
                         )
                     }
                 )
@@ -503,11 +503,11 @@ fun EditorTopBar(
                             runBuild(
                                 context = context,
                                 file = selectedFile?.file?.asRawFile(),
-                                javaHome = javaHome.value,
-                                androidHome = androidHome.value,
-                                ndkHome = ndkHome.value,
-                                task = task.value,
-                                gradleArgs = gradleArgs.value,
+                                javaHome = javaHome,
+                                androidHome = androidHome,
+                                ndkHome = ndkHome,
+                                task = task,
+                                gradleArgs = gradleArgs,
                             )
                             showMenu = false
                         }
