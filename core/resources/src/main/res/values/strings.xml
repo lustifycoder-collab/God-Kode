@@ -238,6 +238,11 @@
     <string name="initializing">Initializing…</string>
     <string name="initialize">Initialize</string>
     <string name="git">Git</string>
+    <string name="ai_chat">AI</string>
+    <string name="ask_gemini">Ask Gemini…</string>
+    <string name="ai_thinking">Thinking…</string>
+    <string name="new_chat">New chat</string>
+    <string name="send">Send</string>
     <string name="no_git_repo_found">No Git repository found</string>
     <string name="initialize_git_repo">Initialize Git repository</string>
     <string name="initialized_empty_git_repo_in">Initialized empty Git repository in %1$s</string>

@@ -108,6 +108,11 @@ fun EditorDrawerSheet(
                 selectedItem = 1
                 title = context.getString(string.git)
             }
+
+            EditorDrawerScreens.AiChat::class.qualifiedName -> {
+                selectedItem = 2
+                title = context.getString(string.ai_chat)
+            }
         }
     }
 
@@ -228,6 +233,10 @@ fun EditorDrawerSheet(
 
                 composable<EditorDrawerScreens.GitManager> {
                     GitManager(fileExplorerViewModel = fileExplorerViewModel)
+                }
+
+                composable<EditorDrawerScreens.AiChat> {
+                    AiChatScreen(modifier = Modifier.fillMaxSize())
                 }
             }
         }

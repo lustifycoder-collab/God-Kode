@@ -18,6 +18,8 @@ package com.dev.godkode.ui.screens.editor.components.drawer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Chat
+import androidx.compose.material.icons.automirrored.rounded.Chat
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Terminal
@@ -54,18 +56,21 @@ fun NavRail(
     val navigationRailItems = listOf(
         stringResource(R.string.files),
         stringResource(R.string.git),
+        stringResource(R.string.ai_chat),
         stringResource(R.string.terminal),
         stringResource(R.string.settings)
     )
     val navRailItemIconsUnselected = listOf(
         Icons.Outlined.Folder,
         ImageVector.vectorResource(drawables.ic_git),
+        Icons.AutoMirrored.Outlined.Chat,
         Icons.Outlined.Terminal,
         Icons.Outlined.Settings
     )
     val navRailItemIconsSelected = listOf(
         Icons.Rounded.Folder,
         ImageVector.vectorResource(drawables.ic_git),
+        Icons.AutoMirrored.Rounded.Chat,
         Icons.Rounded.Terminal,
         Icons.Rounded.Settings
     )
@@ -97,8 +102,9 @@ fun NavRail(
                     when (index) {
                         0 -> navController.navigateSingleTop(EditorDrawerScreens.FileExplorer)
                         1 -> navController.navigateSingleTop(EditorDrawerScreens.GitManager)
-                        2 -> context.open(TerminalActivity::class.java)
-                        3 -> context.open(SettingsActivity::class.java)
+                        2 -> navController.navigateSingleTop(EditorDrawerScreens.AiChat)
+                        3 -> context.open(TerminalActivity::class.java)
+                        4 -> context.open(SettingsActivity::class.java)
                     }
                 }
             )

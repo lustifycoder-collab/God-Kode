@@ -24,4 +24,7 @@ sealed class EditorDrawerScreens {
 
     @Serializable
     data object GitManager : EditorDrawerScreens()
+
+    @Serializable
+    data object AiChat : EditorDrawerScreens()
 }

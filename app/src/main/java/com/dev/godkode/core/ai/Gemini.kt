@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 
 object Gemini {
     private val model = GenerativeModel(
-        modelName = "gemini-2.0-flash-thinking-exp-01-21",
+        modelName = "gemini-3.7-flash",
         apiKey = Secrets.getGenerativeAiApiKey(),
         generationConfig = generationConfig {
             temperature = 0.7f
